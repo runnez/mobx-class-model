@@ -1,18 +1,30 @@
-import { action, extendObservable, observable, set, isObservableObject } from 'mobx';
+import { extendObservable, set, isObservableObject } from 'mobx';
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
+import { Store } from './store';
 
-export class Model <Props> {
-  id: string | number;
-  context: {};
-
+export class Model<Props> {
   static relations = {};
 
   static create<T extends Model<P>, P>(this: new (props: P) => T, props: P) {
-    const model = new this(props) as T & P;
-    model.patch(props);
-    return model;
+    return new this(props);
+  }
+
+  static get<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number) {
+    return this.store.get(id)
+  }
+
+  static put<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, props: P) {
+    return this.store.put(props);
+  }
+
+  id: number | string;
+  context: {};
+
+  // we need to define constructor to type props in static create method
+  constructor(props: Props) {
+    this.patch(props);
   }
 
   patch(props: Partial<Props>) {
@@ -46,7 +58,7 @@ export class Model <Props> {
     };
   }
 
-  private _applyReferences(json: Props) {
+  private _applyReferences(json: { [key: string]: any }) {
     return (
       // @ts-ignore
       Object.entries(this.constructor.relations)
@@ -79,44 +91,3 @@ export class Model <Props> {
   }
 }
 
-export function relation() {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    console.log(target, propertyKey, descriptor);
-  };
-}
-
-export class Store<T extends Model<P>, P extends { id: number | string }> {
-  @observable map = observable.map<number | string, T & P>();
-
-  model: new(props: P) => T;
-
-  constructor(model: new(props: P) => T) {
-    this.model = model;
-  }
-
-  get(id: number | string) {
-    return this.map.get(String(id));
-  }
-
-  @action
-  put = (props: P) => {
-    if (this.map.has(props.id)) {
-      return this.patch(props.id, props)!;
-    }
-
-    return this.map.set(props.id, new this.model(props) as T & P).get(props.id)!;
-  };
-
-  @action
-  patch = (id: number | string, props: P) => {
-    const item = this.map.get(id);
-    if (!item) return;
-    item.patch(props);
-    return item;
-  };
-
-  @action
-  remove = (id: number | string) => {
-    return this.map.delete(id);
-  };
-}

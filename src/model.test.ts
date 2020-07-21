@@ -1,75 +1,121 @@
-import { Model, Store } from './model';
+import { observable, computed, autorun } from 'mobx';
+import { Model } from './model';
 
-interface IUser {
-  id: number;
-  name: string;
+interface IFoo {
+  fooProp: string;
 }
 
-interface IClient {
-  id: number;
-  name: string;
-  user: IUser;
+interface Foo extends IFoo {};
+class Foo extends Model<IFoo> {};
+
+interface IBar {
+  barProp: string;
 }
 
-describe('create', () => {
-  class User {}
+interface Bar extends IBar {}
+class Bar extends Model<IBar> {
+  static relations = {
+    foo: Foo
+  };
+  foo: Foo;
+}
 
-  // @store(new Store<Client, IClient>(Client))
-  class Client extends Model<IClient> {
-    static store = new Store<Client, IClient>(Client);
+test('property', () => {
+  const model = Bar.create({ barProp: 'bar', foo: { fooProp: 'foo' } });
+  expect(model.barProp).toBe('bar');
+  model.patch({ barProp: 'changed' });
+  expect(model.barProp).toBe('changed');
+});
 
-    context: RootStore;
+test('reference', () => {
+  const model = Bar.create({ barProp: 'bar', foo: { fooProp: 'foo' } });
+  expect(model.foo).toBeInstanceOf(Foo);
+  expect(model.foo.fooProp).toBe('foo');
+});
 
+test('array of reference', () => {
+  class Baz extends Model<{ barProp: string; foo: { fooProp: string }[] }> {
     static relations = {
-      user: User
+      foo: [Foo]
+    };
+    foo: Foo[];
+  }
+
+  const model = Baz.create({ barProp: 'bar', foo: [{ fooProp: 'foo' }] });
+
+  expect(model.foo[0]).toBeInstanceOf(Foo);
+});
+
+test('predefined property', () => {
+  class FooWithPredefined extends Model<{
+    someProp: number;
+    foo: { fooProp: string };
+    foo2: { fooProp: string };
+    someArray?: Array<number>;
+  }> {
+    static relations = {
+      foo: Foo,
+      foo2: Foo
     };
 
-    static fetch(id: number) {
-      return getClient(id).then(this.store.put);
-    }
+    @observable foo: Foo;
+    @observable someProp = 1;
+    @observable someArray = observable.array<number>();
 
-    fn(arg?: string) {
-      if (arg) return arg;
-      return 'fn test';
-    }
-  }
-
-  Client.fetch(10);
-
-  Client.store.get(10);
-
-  class RootStore {
-    global: string = 'global';
-
-    constructor() {
-      Model.prototype.context = this;
+    @computed get someComputed() {
+      return this.someProp + 1;
     }
   }
 
-  const context = new RootStore();
+  const model = FooWithPredefined.create(
+    { someProp: 2, foo: { fooProp: 'fooProp' }, foo2: { fooProp: 'fooProp' }, someArray: [1] }
+  );
 
-  test('store', () => {
-    const client = Client.store.put({ id: 1, name: 'test' });
-    expect(Client.store).toBeTruthy();
-    expect(client.id).toEqual(1);
-    expect(client.name).toEqual('test');
-    expect(client.fn()).toEqual('fn test');
-    expect(client.fn('arg test')).toEqual('arg test');
-    client.patch({ name: 'new name' });
-    expect(client.name).toEqual('new name');
-    expect(client.context.global).toBe(context.global);
+  expect(model.someProp).toBe(2);
+  expect(model.someArray[0]).toBe(1);
+  expect(model.someComputed).toBe(3);
+  expect(model.foo).toBeInstanceOf(Foo);
+  // Тест-кейс для js файлов, у них может быть не описано поле в модели
+  // @ts-ignore
+  expect(model.foo2).toBeInstanceOf(Foo);
+  expect(model.foo.fooProp).toBe('fooProp');
+
+  const subscriber = jest.fn();
+
+  autorun(() => {
+    subscriber(model.someProp);
   });
 
-  test('create', () => {
-    const client = Client.create({ id: 2, name: '' });
-    client.patch({ name: '1' });
-  });
+  model.someProp = 5;
 
-  test('relatios', () => {
-    const client = Client.store.put({
-      id: 1,
-      name: 'test',
-      user: { id: 1, name: 'user' }
-    });
-  });
+  expect(subscriber.mock.calls.length).toBe(2);
+
+  const SomeComp = (foo: FooWithPredefined) => {
+    foo.patch({ someProp: 1 })
+  }
 });
+
+test('afterCreate hook', () => {
+  class InternalModel {
+    foo = 'foo';
+  }
+
+  class FooWithHook extends Model<{
+    someProp: number;
+    fooArray: Array<{ foo: number }>
+  }> {
+    @observable someProp = 1;
+    fooArray: InternalModel;
+
+    afterCreate() {
+      this.someProp = 5;
+      this.fooArray = new InternalModel();
+    }
+  }
+
+  const model = FooWithHook.create({ someProp: 2, fooArray: [{ foo: 1 }, { foo: 2 }] });
+
+  expect(model.someProp).toBe(5);
+  expect(model.fooArray).toBeInstanceOf(InternalModel);
+});
+
