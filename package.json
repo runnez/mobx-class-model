@@ -1,0 +1,24 @@
+{
+  "name": "mobx-active-model",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "yarn jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "mobx": "^5.15.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.19",
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.7",
+    "@types/jest": "^26.0.5",
+    "jest": "^26.1.0",
+    "ts-jest": "^26.1.3"
+  }
+}
