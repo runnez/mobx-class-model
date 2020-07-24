@@ -1,7 +1,7 @@
 # Active models
 
-- Converts json to
-- It helps to deal with nested model relations
+- Converts json to models
+- Deal with nested model relations
 - Also it has helper to define model instance storage to guarantee having only one instance for record.
 
 ```typescript
@@ -59,18 +59,23 @@ class User {
   }
 }
 
-Client.fetch(10);
+Client.fetch(10).then(client => console.log(client));
+const client = Client.get(10);
 ```
-how to use with RootStore injection?
+how to use RootStore injection?
 
-```
+```typescript
 class RootStore {
   constructor() {
-    Model.prototype.context = this;
+    Model.prototype.rootStore = this;
   }
 }
 
-class
+class User extends Model<{
+  id: number
+}> {
+  rootStore: RootStore
+}
 
 const context = new RootStore();
 ```

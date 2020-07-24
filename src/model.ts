@@ -12,7 +12,7 @@ export class Model<Props> {
   }
 
   static get<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number) {
-    return this.store.get(id)
+    return this.store.get(id);
   }
 
   static put<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, props: P) {
@@ -21,6 +21,7 @@ export class Model<Props> {
 
   id: number | string;
   context: {};
+  rootStore: {};
 
   // we need to define constructor to type props in static create method
   constructor(props: Props) {
