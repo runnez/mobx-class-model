@@ -45,8 +45,8 @@ const duplicateTodo = Todo.put({
   user: { id: 1, name: 'user' }
 });
 
-console.log(duplicateTodo === todo) // true
-console.log(duplicateTodo === Todo.get(1))
+console.log(duplicateTodo === todo); // true
+console.log(duplicateTodo === Todo.get(1)); // true
 
 User.get(1) // User
 Todo.get(1) // Todo
