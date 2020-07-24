@@ -1,8 +1,70 @@
-# Active models
+# Active Model
+Class-transformer allows you to transform plain object to some instance of class with mobx in mind
 
-- Converts json to models
+It helps you
+- Convert json to model
 - Deal with nested model relations
-- Also it has helper to define model instance storage to guarantee having only one instance for record.
+- Have single instance of model
+
+```javascript
+import { Model, Store } from 'mobx-active-model';
+
+class User extends Model {
+  static store = new Store(User);
+
+  hi() {
+    console.log('hi ' + this.name);
+  }
+};
+
+class Todo extends Model {
+  static store = new Store(Todo);
+  static relations = { user: User };
+};
+
+const todo = Todo.put({
+  id: 1,
+  title: 'todo',
+  user: { id: 1, name: 'user' }
+});
+
+console.log(todo.title); // todo
+console.log(todo.user.hi()); // hi user
+console.log(todo === Todo.get(1)); // true
+console.log(todo.user === User.get(1)); // true
+
+todo.patch({ title: 'new title' });
+
+console.log(todo.title === 'new title'); // true;
+
+Todo.put({
+  id: 1,
+  title: 'update',
+  user: { id: 1, name: 'user' }
+});
+
+console.log(todo.title === 'update'); // true;
+
+class Todo extends Model {
+  static relations = { user: User };
+  static store = new Store(Todo);
+
+  static fetch = function(id) {
+    return fetchTodo(id).then(this.store.put);
+  }
+
+  update(props) {
+    updateTodo(this.id, props).then(this.store.put);
+  }
+};
+
+Todo.fetch(1);
+Todo.get(1); // undefined, but it's get to observable map
+// after request
+const todo = Todo.get(1);
+```
+
+Usage with typescript
 
 ```typescript
 
@@ -24,7 +86,7 @@ interface ITodo {
 }
 
 class Todo extends Model<ITodo> {
-  static store = new Store(Client);
+  static store = new Store(Todo);
   static relations = { user: User };
   user: User;
 };
@@ -59,8 +121,8 @@ class User {
   }
 }
 
-Client.fetch(10).then(client => console.log(client));
-const client = Client.get(10);
+User.fetch(10).then(client => console.log(client)); // User
+console.log(Client.get(10)); //User
 ```
 how to use RootStore injection?
 

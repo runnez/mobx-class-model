@@ -1,6 +1,6 @@
 import { Model, Store } from './index';
 
-interface User extends IUser {};
+interface User extends IUser {}
 class User extends Model<IUser> {
   static store = new Store(User);
 
@@ -28,6 +28,15 @@ class Client extends Model<IClient> {
     return fetchUser(id).then(this.store.put);
   }
 }
+
+const client = Client.put({
+  id: 1,
+  name: '1',
+  user: {
+    id: 1,
+    name: '1212'
+  }
+});
 
 class RootStore {
   global: string = 'global';
@@ -57,6 +66,10 @@ describe('create', () => {
       name: 'test',
       user: { id: 1, name: 'tester' }
     });
+
+    const client3 = Client.get(1)!;
+    client3.user.hi();
+
     expect(client.id).toEqual(1);
     const client2 = Client.get(1);
     expect(client.name).toEqual('test');

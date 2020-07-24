@@ -8,8 +8,8 @@ export class Store<T extends Model<P>, P extends { id: Id }> {
 
   Model: new(props: P) => T;
 
-  constructor(Model: new(props: P) => T) {
-    this.Model = Model;
+  constructor(constructor: new(props: P) => T) {
+    this.Model = constructor;
   }
 
   get(id: number | string) {
@@ -22,6 +22,7 @@ export class Store<T extends Model<P>, P extends { id: Id }> {
       return this.patch(props.id, props)!;
     }
     const model = new this.Model(props);
+    model.patch(props);
     this.map.set(props.id, model);
     return model;
   };

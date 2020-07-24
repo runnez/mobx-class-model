@@ -8,7 +8,9 @@ export class Model<Props> {
   static relations = {};
 
   static create<T extends Model<P>, P>(this: new (props: P) => T, props: P) {
-    return new this(props);
+    const model = new this(props);
+    model.patch(props);
+    return model;
   }
 
   static get<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number) {
@@ -24,9 +26,7 @@ export class Model<Props> {
   rootStore: {};
 
   // we need to define constructor to type props in static create method
-  constructor(props: Props) {
-    this.patch(props);
-  }
+  constructor(props: Props) {}
 
   patch(props: Partial<Props>) {
     const keys = Object.keys(props).reduce(
