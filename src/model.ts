@@ -6,6 +6,8 @@ import { Store } from './store';
 
 export class Model<Props> {
   static relations = {};
+  static id: any;
+  static idKey = 'id';
 
   static create<T extends Model<P>, P>(this: new (props: P) => T, props: P) {
     const model = new this(props);
@@ -13,7 +15,13 @@ export class Model<Props> {
     return model;
   }
 
-  static get<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number) {
+  static get<
+    T extends Model<P>,
+    P extends { id: number | string }
+  >(
+    this: { store: Store<T, P>, new (props: P, id: string): T, id: string },
+    id: typeof this['id']
+  ) {
     return this.store.get(id);
   }
 
@@ -21,7 +29,14 @@ export class Model<Props> {
     return this.store.put(props);
   }
 
-  id: number | string;
+  static patch<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number, props: P) {
+    return this.store.patch(id, props);
+  }
+
+  static remove<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number) {
+    return this.store.remove(id);
+  }
+
   context: {};
   rootStore: {};
 

@@ -44,24 +44,55 @@ Todo.put({
 });
 
 console.log(todo.title === 'update'); // true;
+```
 
+```javascript
 class Todo extends Model {
   static relations = { user: User };
   static store = new Store(Todo);
 
-  static fetch = function(id) {
-    return fetchTodo(id).then(this.store.put);
+  static fetch(id) {
+    return getTodo(id).then(this.put);
   }
 
-  update(props) {
-    updateTodo(this.id, props).then(this.store.put);
+  static add(props) {
+    return createTodo(props).then(this.put);
+  }
+
+  static onSocket({ key, payload }) {
+    if (['todo_added', 'todo_updated'].includes(key)) {
+      this.put(payload);
+    }
+  }
+
+  save(props) {
+    return updateTodo(props).then(this.patch);
   }
 };
 
-Todo.fetch(1);
-Todo.get(1); // undefined, but it's get to observable map
-// after request
-const todo = Todo.get(1);
+const Todo = observer(({ id }) => {
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    Todo.fetch(id).catch(err => setError(error)), [id]
+  });
+
+  const handleAdd = () => Todo.add({ title: 'Untitled' });
+
+  if (error) return <div>oops</div>;
+
+  const todo = Todo.get(id);
+
+  if (!todo) return <div>loading</div>;
+
+  return (
+    <div>
+      {todo.title}
+
+      <Button onClick={handleAdd}>Add</Button>
+    </div>
+  )
+})
 ```
 
 Usage with typescript

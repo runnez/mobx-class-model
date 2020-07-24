@@ -38,6 +38,7 @@ const client = Client.put({
   }
 });
 
+
 class RootStore {
   global: string = 'global';
 
