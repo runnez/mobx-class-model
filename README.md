@@ -1,28 +1,55 @@
 # Active models
 
-Active model has roots from Rails Active Record model
-It helps to deal with nested model relations and provides us clean way to deal with models.
-Also it has helper to define model instance storage to guarantee having only one instance for record.
+- Converts json to
+- It helps to deal with nested model relations
+- Also it has helper to define model instance storage to guarantee having only one instance for record.
 
 ```typescript
-class User extends Model<IClient> {}
+
+interface IUser {
+  id: number;
+  name: string;
+};
+
+interface User extends IUser {};
+class User extends Model<IUser> {
+  hi() {
+    console.log('hi ' + this.name)
+  }
+};
+
+interface ITodo {
+  id: number;
+  title: string;
+}
 
 class Todo extends Model<ITodo> {
-  static store = new Store<Todo, IClient>(Client);
-
+  static store = new Store(Client);
   static relations = { user: User };
-
   user: User;
 };
 
-const client = Client.create({
+const todo = Todo.put({
   id: 1,
-  name: 'client',
-  user: {
-    id: 1,
-    name: 'user'
-  }
+  title: 'todo',
+  user: { id: 1, name: 'user' }
 });
+
+console.log(todo.title) // todo
+console.log(todo.user.hi()) // hi user
+console.log(User.get(1) === todo.user) // true
+
+const duplicateTodo = Todo.put({
+  id: 1,
+  title: 'todo',
+  user: { id: 1, name: 'user' }
+});
+
+console.log(duplicateTodo === todo) // true
+console.log(duplicateTodo === Todo.get(1))
+
+User.get(1) // User
+Todo.get(1) // Todo
 ```
 
 ```typescript
@@ -33,15 +60,17 @@ class User {
 }
 
 Client.fetch(10);
-Client.store.get(10);
+```
+how to use with RootStore injection?
 
+```
 class RootStore {
-  global: string = 'global';
-
   constructor() {
     Model.prototype.context = this;
   }
 }
+
+class
 
 const context = new RootStore();
 ```
