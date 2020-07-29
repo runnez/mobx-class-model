@@ -13,6 +13,22 @@ type Exact<T> = {
   [P in keyof T]: T[P];
 };
 
+// type Pick<T, K extends string> = {
+//   [P in K]: T[K]
+// }
+
+// function pick2<T extends {}, K extends keyof T>(object: T, keys: K[]): Pick<T, K> {
+//   const result: { [key: string]: any } = {};
+
+//   keys.forEach(key => {
+//     result[key] = object[key];
+//   })
+
+//   return result;
+// }
+
+// const pickobj = pick2({ a: 1, b: 2 }, ['a']);
+
 export class Model<Props> {
   static relations = {};
   static id: any;
