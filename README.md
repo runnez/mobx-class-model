@@ -70,6 +70,16 @@ class Todo extends Model {
   }
 };
 
+class TodoListStore {
+  @observable items = null;
+
+  fetch() {
+    fetchTodos().then(data => {
+      this.items = data.map(Todo.put)
+    })
+  }
+}
+
 const Todo = observer(({ id }) => {
   const [error, setError] = useState(null);
 

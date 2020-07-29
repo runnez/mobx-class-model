@@ -10,6 +10,7 @@ class Foo extends Model<IFoo> {};
 
 interface IBar {
   barProp: string;
+  foo: IFoo;
 }
 
 interface Bar extends IBar {}
@@ -89,10 +90,6 @@ test('predefined property', () => {
   model.someProp = 5;
 
   expect(subscriber.mock.calls.length).toBe(2);
-
-  const SomeComp = (foo: FooWithPredefined) => {
-    foo.patch({ someProp: 1 })
-  }
 });
 
 test('afterCreate hook', () => {

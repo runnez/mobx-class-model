@@ -4,37 +4,64 @@ import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import { Store } from './store';
 
+type StoreWise<T extends Model<P>, P> = {
+  store: Store<T, P>,
+  new (props: P): T
+};
+
+type Exact<T> = {
+  [P in keyof T]: T[P];
+};
+
 export class Model<Props> {
   static relations = {};
   static id: any;
   static idKey = 'id';
 
-  static create<T extends Model<P>, P>(this: new (props: P) => T, props: P) {
+  static create<T extends Model<P>, P>(this: new(props: P) => T, props: Exact<P>) {
     const model = new this(props);
     model.patch(props);
+    model.afterCreate();
     return model;
   }
 
-  static get<
-    T extends Model<P>,
-    P extends { id: number | string }
-  >(
-    this: { store: Store<T, P>, new (props: P, id: string): T, id: string },
-    id: typeof this['id']
+  static get<T extends Model<P>, P>(
+    this: StoreWise<T, P>,
+    id: number
   ) {
     return this.store.get(id);
   }
 
-  static put<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, props: P) {
+  static getAll<T extends Model<P>, P>(this: StoreWise<T, P>) {
+    return this.store.all();
+  }
+
+  static put<T extends Model<P>, P>(
+    this: StoreWise<T,P>,
+    props: Exact<P>
+  ) {
     return this.store.put(props);
   }
 
-  static patch<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number, props: P) {
+  static patch<T extends Model<P>, P>(
+    this: StoreWise<T,P>,
+    id: number,
+    props: Partial<P>
+  ) {
     return this.store.patch(id, props);
   }
 
-  static remove<T extends Model<P>, P extends { id: number | string }>(this: { store: Store<T, P>, new (props: P): T }, id: number) {
+  static remove<T extends Model<P>, P extends {}>(
+    this: StoreWise<T,P>,
+    id: number
+  ) {
     return this.store.remove(id);
+  }
+
+  static flush<T extends Model<P>, P extends {}>(
+    this: StoreWise<T,P>
+  ) {
+    return this.store.flush();
   }
 
   context: {};
@@ -42,6 +69,9 @@ export class Model<Props> {
 
   // we need to define constructor to type props in static create method
   constructor(props: Props) {}
+
+  // we call it in create method
+  afterCreate() {}
 
   patch(props: Partial<Props>) {
     const keys = Object.keys(props).reduce(

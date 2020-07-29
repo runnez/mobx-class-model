@@ -1,8 +1,8 @@
-import { action, observable } from 'mobx';
+import { action, observable, values } from 'mobx';
 import { Model } from './model';
 
 export class Store<T extends Model<P>, P> {
-  @observable map = observable.map<typeof Model['id'], T>();
+  @observable map = observable.map<number, T>();
 
   Model: new(props: P) => T;
 
@@ -10,8 +10,16 @@ export class Store<T extends Model<P>, P> {
     this.Model = constructor;
   }
 
-  get(id: typeof Model['id']) {
+  get(id: number) {
     return this.map.get(id);
+  }
+
+  all() {
+    return values(this.map);
+  }
+
+  flush() {
+    return this.map.clear();
   }
 
   @action
@@ -29,7 +37,7 @@ export class Store<T extends Model<P>, P> {
   };
 
   @action
-  patch = (id: typeof Model['id'], props: P) => {
+  patch = (id: typeof Model['id'], props: Partial<P>) => {
     const item = this.get(id);
     if (!item) return;
     item.patch(props);
@@ -37,7 +45,7 @@ export class Store<T extends Model<P>, P> {
   };
 
   @action
-  remove = (id: typeof Model['id']) => {
+  remove = (id: number) => {
     return this.map.delete(id);
   };
 }
