@@ -1,7 +1,5 @@
 import { extendObservable, set, isObservableObject } from 'mobx';
-import omit from 'lodash/omit';
-import pick from 'lodash/pick';
-import isEmpty from 'lodash/isEmpty';
+import { pick, omit, isEmpty } from './utils';
 import { Store } from './store';
 
 type StoreWise<T extends Model<P>, P> = {
@@ -12,22 +10,6 @@ type StoreWise<T extends Model<P>, P> = {
 type Exact<T> = {
   [P in keyof T]: T[P];
 };
-
-// type Pick<T, K extends string> = {
-//   [P in K]: T[K]
-// }
-
-// function pick2<T extends {}, K extends keyof T>(object: T, keys: K[]): Pick<T, K> {
-//   const result: { [key: string]: any } = {};
-
-//   keys.forEach(key => {
-//     result[key] = object[key];
-//   })
-
-//   return result;
-// }
-
-// const pickobj = pick2({ a: 1, b: 2 }, ['a']);
 
 export class Model<Props> {
   static relations = {};
@@ -86,7 +68,6 @@ export class Model<Props> {
   // we need to define constructor to type props in static create method
   constructor(props: Props) {}
 
-  // we call it in create method
   afterCreate() {}
 
   patch(props: Partial<Props>) {
@@ -111,8 +92,8 @@ export class Model<Props> {
   private _prepareProps(props: Props) {
     // @ts-ignore
     const relationsKeys = Object.keys(this.constructor.relations);
-    const attrs = omit(props as {}, relationsKeys);
-    const relations = pick(props as {}, relationsKeys);
+    const attrs = omit(props as {}, relationsKeys as []);
+    const relations = pick(props as {}, relationsKeys as []);
 
     return {
       ...attrs,
@@ -137,7 +118,7 @@ export class Model<Props> {
             isObservableObject(item)
               ? item
               : model.store
-              ? model.store.put(item)
+              ? model.put(item)
               : model.create(item);
 
           // @ts-ignore
