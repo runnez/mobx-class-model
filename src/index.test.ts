@@ -1,4 +1,4 @@
-import { Model, Store } from './index';
+import { Model, prop, ref } from './index';
 
 describe('Model static methods', () => {
   const factoryClient = (id = 1) => ({
@@ -11,13 +11,10 @@ describe('Model static methods', () => {
     id: number;
     name: string;
   };
-  interface User extends IUser {}
-  class User extends Model<IUser> {
-    static store = new Store(User);
 
-    hi() {
-      return 'hi ' + this.name;
-    }
+  class User extends Model<IUser> {
+    @prop id: number;
+    @prop name: string;
   }
 
   interface IClient {
@@ -25,12 +22,11 @@ describe('Model static methods', () => {
     name: string;
     user: IUser;
   }
-  interface Client extends IClient {
-    user: User;
-  }
+
   class Client extends Model<IClient> {
-    static relations = { user: User };
-    static store = new Store(Client);
+    @prop name: string;
+
+    @ref(User) user: User;
   }
 
   beforeEach(() => {
@@ -73,16 +69,16 @@ describe('Model static methods', () => {
     expect(Client.get(1)).toEqual(undefined);
   });
 
-  test('getAll', () => {
+  test('all', () => {
     const client = Client.put(factoryClient());
     const client2 = Client.put(factoryClient(2));
-    expect(Client.getAll()).toEqual([client, client2]);
+    expect(Client.all()).toEqual([client, client2]);
   });
 
   test('flush', () => {
     Client.put(factoryClient());
     Client.flush();
     expect(Client.get(1)).toEqual(undefined);
-    expect(Client.getAll()).toEqual([]);
+    expect(Client.all()).toEqual([]);
   });
 });

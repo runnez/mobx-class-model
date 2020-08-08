@@ -3,7 +3,7 @@ import { pick, omit, isEmpty } from './utils';
 import { Store } from './store';
 
 type StoreWise<T extends Model<P>, P> = {
-  store: Store<T, P>,
+  store?: Store<T, P>,
   new (props: P): T
 };
 
@@ -11,15 +11,20 @@ type Exact<T> = {
   [P in keyof T]: T[P];
 };
 
+function injectStore<T extends Model<P>, P>(Class: StoreWise<T, P>) {
+  if (!Class.store) {
+    Class.store = new Store(Class);
+  }
+}
+
 export class Model<Props> {
-  static relations = {};
   static id: any;
   static idKey = 'id';
 
   static create<T extends Model<P>, P>(this: new(props: P) => T, props: Exact<P>) {
     const model = new this(props);
     model.patch(props);
-    model.afterCreate();
+    model.onInit();
     return model;
   }
 
@@ -27,18 +32,21 @@ export class Model<Props> {
     this: StoreWise<T, P>,
     id: number
   ) {
-    return this.store.get(id);
+    injectStore(this);
+    return this.store!.get(id);
   }
 
-  static getAll<T extends Model<P>, P>(this: StoreWise<T, P>) {
-    return this.store.all();
+  static all<T extends Model<P>, P>(this: StoreWise<T, P>) {
+    injectStore(this);
+    return this.store!.all();
   }
 
   static put<T extends Model<P>, P>(
     this: StoreWise<T,P>,
     props: Exact<P>
   ) {
-    return this.store.put(props);
+    injectStore(this);
+    return this.store!.put(props);
   }
 
   static patch<T extends Model<P>, P>(
@@ -46,29 +54,31 @@ export class Model<Props> {
     id: number,
     props: Partial<P>
   ) {
-    return this.store.patch(id, props);
+    return this.store?.patch(id, props);
   }
 
   static remove<T extends Model<P>, P extends {}>(
     this: StoreWise<T,P>,
     id: number
   ) {
-    return this.store.remove(id);
+    return this.store?.remove(id);
   }
 
   static flush<T extends Model<P>, P extends {}>(
     this: StoreWise<T,P>
   ) {
-    return this.store.flush();
+    return this.store?.flush();
   }
 
   context: {};
   rootStore: {};
 
   // we need to define constructor to type props in static create method
+  // tslint:disable-next-line: no-empty
   constructor(props: Props) {}
 
-  afterCreate() {}
+  // tslint:disable-next-line: no-empty
+  onInit() {}
 
   patch(props: Partial<Props>) {
     const keys = Object.keys(props).reduce(
@@ -91,7 +101,7 @@ export class Model<Props> {
 
   private _prepareProps(props: Props) {
     // @ts-ignore
-    const relationsKeys = Object.keys(this.constructor.relations);
+    const relationsKeys = Object.keys(this.constructor.relations || {});
     const attrs = omit(props as {}, relationsKeys as []);
     const relations = pick(props as {}, relationsKeys as []);
 
@@ -104,7 +114,7 @@ export class Model<Props> {
   private _applyReferences(json: { [key: string]: any }) {
     return (
       // @ts-ignore
-      Object.entries(this.constructor.relations)
+      Object.entries(this.constructor.relations || {})
         // @ts-ignore
         .filter(([key]) => json[key] !== undefined)
         // @ts-ignore

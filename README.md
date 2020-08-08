@@ -64,12 +64,13 @@ interface IUser {
   name: string;
 };
 
-interface User extends IUser {};
 class User extends Model<IUser> {
-  hi() {
-    console.log('hi ' + this.name)
-  }
+  @prop id: number;
+  @prop name: string;
+  @relation user: User;
 };
+
+interface Todo extends ITodo {};
 ```
 
 how to use RootStore injection?

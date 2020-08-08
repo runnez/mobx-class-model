@@ -10,8 +10,6 @@ export function pick<T, K extends keyof T>(object: T, keys: K[]) {
   };
 }
 
-const pickobj = pick({ a: 1, b: 2, c: undefined }, ['a', 'c']);
-
 export function omit <T extends { [key: string]: any }, K extends keyof T>(object: T, keys: K[]) {
   const result: Partial<T> = {};
 

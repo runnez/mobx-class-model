@@ -92,7 +92,7 @@ test('predefined property', () => {
   expect(subscriber.mock.calls.length).toBe(2);
 });
 
-test('afterCreate hook', () => {
+test('onInit hook', () => {
   class InternalModel {
     foo = 'foo';
   }
@@ -104,7 +104,7 @@ test('afterCreate hook', () => {
     @observable someProp = 1;
     fooArray: InternalModel;
 
-    afterCreate() {
+    onInit() {
       this.someProp = 5;
       this.fooArray = new InternalModel();
     }
