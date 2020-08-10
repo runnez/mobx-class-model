@@ -92,6 +92,24 @@ test('predefined property', () => {
   expect(subscriber.mock.calls.length).toBe(2);
 });
 
+it('should pick defined props if they were defined', () => {
+  interface IFoo {
+    prop: string;
+  }
+
+  interface FooModel extends IFoo {}
+  class FooModel extends Model<IFoo> {
+    static props = { prop: 'string' };
+  }
+
+  const props = { prop: 'value', unexpectedProp: 'value' };
+  const foo = FooModel.create(props);
+
+  expect(foo.prop).toBe('value');
+  // @ts-ignore
+  expect(foo.unexpectedProp).toBe(undefined);
+});
+
 test('onInit hook', () => {
   class InternalModel {
     foo = 'foo';

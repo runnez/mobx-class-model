@@ -4,6 +4,7 @@ import { Store } from './store';
 
 type StoreWise<T extends Model<P>, P> = {
   store?: Store<T, P>,
+  injectStore: () => void,
   new (props: P): T
 };
 
@@ -11,7 +12,9 @@ type Exact<T> = {
   [P in keyof T]: T[P];
 };
 
-function injectStore<T extends Model<P>, P>(Class: StoreWise<T, P>) {
+function injectStore<T extends Model<P>, P>(
+  Class: StoreWise<T, P>
+) {
   if (!Class.store) {
     Class.store = new Store(Class);
   }
@@ -21,6 +24,19 @@ export class Model<Props> {
   static id: any;
   static idKey = 'id';
 
+  static produce<T extends Model<P>, P>(this: StoreWise<T, P>, props: Exact<P>, options?: { cache: boolean }) {
+    if (!options || options.cache) {
+      injectStore(this);
+      return this.store!.put(props);
+    }
+
+    const model = new this(props);
+    model.patch(props);
+    model.onInit();
+    return model;
+  }
+
+  // @TODO decide should it be public available
   static create<T extends Model<P>, P>(this: new(props: P) => T, props: Exact<P>) {
     const model = new this(props);
     model.patch(props);
@@ -70,6 +86,14 @@ export class Model<Props> {
     return this.store?.flush();
   }
 
+  static injectStore<T extends Model<P>, P>(
+    this: StoreWise<T,P>
+   ) {
+    if (!this.store) {
+      this.store = new Store(this);
+    }
+  }
+
   context: {};
   rootStore: {};
 
@@ -81,6 +105,9 @@ export class Model<Props> {
   onInit() {}
 
   patch(props: Partial<Props>) {
+    const Class = this.constructor as any;
+    props = Class.props ? pick(props, Object.keys(Class.props) as any) : props;
+
     const keys = Object.keys(props).reduce(
       (acc, key) => {
         // @ts-ignore

@@ -23,10 +23,9 @@ describe('Model static methods', () => {
     user: IUser;
   }
 
+  interface Client extends IClient {}
   class Client extends Model<IClient> {
-    @prop name: string;
-
-    @ref(User) user: User;
+    static relations = { user: User };
   }
 
   beforeEach(() => {

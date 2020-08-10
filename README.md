@@ -1,84 +1,140 @@
-# Active Model [Draft]
-Class-transformer allows you to transform plain object to some instance of class with Mobx in mind
+# Mobx Active Model
 
-It helps you
-- Convert json to model
-- Deal with nested model relations
-- Have single instance of model
+Model layer for Mobx application, heavily inspired by the server-side model class approach.
 
-```javascript
-import { Model, Store } from 'mobx-active-model';
+It's designed as extension for Mobx store [best practices](https://mobx.js.org/best/store.html), so you can easily adopt it to a standalone project.
 
-class User extends Model {
-  hi() {
-    console.log('hi ' + this.name);
-  }
-};
+Using this you can replace your domain stores and share code between stores and views. So our stores becoming feels like a classical **P** in MVP pattern.
 
-const user = User.create({ id: 1, name: 'John' });
+* ⚙️  Class based
+* 😎 Reducing boilerplate
+* 🏎 Typed (TS)
+* 📦 Lightweight (2kb min)
 
-console.log(user.name); // John
-console.log(user.hi()); // hi John
+> Active Model helps to convert JSON structures into complex object graphs and ensures existence single object reference. Underhood each model class has a reference store to deal with that.
 
-user.patch({ name: 'New John' });
-```
-Let's add relations
-```javascript
-class Todo extends Model {
-  static relations = { user: User };
-};
+## Getting started
 
-const todo = Todo.create({
-  id: 1,
-  title: 'todo',
-  user: { id: 1, name: 'user' }
-});
-
-console.log(todo.user.name); // John
-console.log(todo.user.hi()); // hi John
-```
-Let's add store and unlock methods
-```javascript
-class Todo extends Model {
-  static relations = { user: User };
-  static store = new Store(Todo);
-};
-
-const todo = Todo.put({
-  id: 1,
-  title: 'todo',
-  user: { id: 1, name: 'user' }
-});
-
-console.log(todo === Todo.get(1)); // true
-console.log(todo.user === User.get(1)); // true
-
-Todo.patch(1, { title: 'new name' });
-```
-
-Usage with typescript
-
+### Define model
 ```typescript
-interface IUser {
-  id: number;
-  name: string;
-};
+// 1. Define the expected Props interface. Usually, it's a server-side JSON structure.
+interface ApiUser {
+  id: number
+  name: string
+  lastName: string
+}
 
-class User extends Model<IUser> {
-  @prop id: number;
-  @prop name: string;
-  @relation user: User;
-};
+// 2. Extend your class from Model.
+// 3. And pass Props as generic (which using while creating an instance and updating it).
+// 4. Expose using props by @prop decorator.
+class User extends Model<ApiUser> {
+  @prop id: number
+  @prop name: string
+  @prop lastName: string
 
-interface Todo extends ITodo {};
+  @computed get fullName() {
+    return this.name + this.lastName
+  }
+}
+```
+### Add relations
+```typescript
+interface ApiTodo {
+  id: number
+  title: string
+  completed: boolean
+  user: ApiUser
+  performers: ApiUser[]
+}
+
+// 5. Mark prop as releation and pass your model class
+class Todo extends Model<ApiTodo> {
+  @ref(User) user: User
+  @ref.array(User) performers: User
+
+  @prop id: number
+  @prop string: number
+  @prop completed: boolean
+}
+```
+### Instance methods
+`model.patch`
+Every instance method has **patch** method.
+```typescript
+todo.patch({ title: 'changed' })
+todo.title // changed
+todo.user.patch({ lastName: 'Snow' })
+todo.user.fullName // John Snow
+```
+**`model.onInit`**
+We can define **onInit** hook which will be called after an initialization.
+
+> So how can we produce a new instance of a model?
+
+### Class methods
+Extending Model also charges your model class by static methods
+
+`Model.produce`
+Produces a new Model instance or updates existing reference and returns it.
+```typescript
+const todo = Todo.produce(todoJson)
+todo.user.fullName // John Doe
+```
+`Model.get`
+Returns existing instance by id. It's observable.
+```typescript
+User.get(1) // User
+```
+`Model.all`
+Returns all existing instance in order of adding.
+```typescript
+User.all() // [User]
+```
+`Model.remove`
+Removes reference from references store.
+```typescript
+User.remove(1)
+```
+`Model.flush`
+Removes all references from references store.
+```typescript
+User.flush()
 ```
 
-how to use RootStore injection?
+## Examples
+```typescript
+class TodoScreenStore {
+  @observable todos = []
 
+  @action fetch() {
+    fetchTodos().then(todos => {
+      this.todos = todos.map(todo => Todo.put(todo))
+    })
+  }
+}
+
+const TodosScreen = () => {
+  const { todosScreenStore } = useStores()
+
+  useEffect(() => {
+    todosScreenStore.fetch()
+  })
+
+  return ...
+}
+
+const TodoModal = ({ id }: { id: number }) => {
+  const todo = Todo.get(id)
+
+  return ...
+}
+```
+
+## How to use with RootStore?
 ```typescript
 class RootStore {
   constructor() {
-    Model.prototype.rootStore = this;
+    Model.prototype.rootStore = this
   }
 }
 
@@ -86,5 +142,5 @@ class User extends Model<{}> {
   rootStore: RootStore
 }
 
-const context = new RootStore();
+const context = new RootStore()
 ```
