@@ -1,12 +1,12 @@
-import { action, observable, values } from 'mobx';
-import { Model } from './model';
+import { action, observable, values } from "mobx";
+import { Model } from "./model";
 
 export class Store<T extends Model<P>, P> {
   @observable map = observable.map<number | string, T>();
 
-  Model: new(props: P) => T;
+  Model: new (props: P) => T;
 
-  constructor(constructor: new(props: P) => T) {
+  constructor(constructor: new (props: P) => T) {
     this.Model = constructor;
   }
 

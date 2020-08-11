@@ -4,8 +4,8 @@ export const prop = (target: any, key: string) => {
 };
 
 export const identifier = (target: any, key: string) => {
-  if (target.constructor.hasOwnProperty('idKey')) {
-    throw new Error('should be only one identifier');
+  if (target.constructor.hasOwnProperty("idKey")) {
+    throw new Error("should be only one identifier");
   }
 
   target.constructor.idKey = key;
@@ -17,7 +17,7 @@ export function ref(Class: any) {
   return innerRef(Class);
 }
 
-ref.array = function(Class: any) {
+ref.array = (Class: any) => {
   return innerRef([Class]);
 };
 

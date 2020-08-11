@@ -1,28 +1,30 @@
-import { extendObservable, set, isObservableObject } from 'mobx';
-import { pick, omit, isEmpty } from './utils';
-import { Store } from './store';
+import { extendObservable, set, isObservableObject } from "mobx";
+import { pick, omit, isEmpty } from "./utils";
+import { Store } from "./store";
 
 type StoreWise<T extends Model<P>, P> = {
-  store?: Store<T, P>,
-  new (props: P): T
+  store?: Store<T, P>;
+  new (props: P): T;
 };
 
 type Exact<T> = {
   [P in keyof T]: T[P];
 };
 
-function injectStore<T extends Model<P>, P>(
-  Class: StoreWise<T, P>
-) {
+function injectStore<T extends Model<P>, P>(Class: StoreWise<T, P>) {
   if (!Class.store) {
     Class.store = new Store(Class);
   }
 }
 
 export class Model<Props> {
-  static idKey = 'id';
+  static idKey = "id";
 
-  static produce<T extends Model<P>, P>(this: StoreWise<T, P>, props: Exact<P>, options?: { cache: boolean }) {
+  static produce<T extends Model<P>, P>(
+    this: StoreWise<T, P>,
+    props: Exact<P>,
+    options?: { cache: boolean }
+  ) {
     if (!options || options.cache) {
       injectStore(this);
       return this.store!.put(props);
@@ -35,7 +37,10 @@ export class Model<Props> {
   }
 
   // @TODO decide should it be public available
-  static create<T extends Model<P>, P>(this: new(props: P) => T, props: Exact<P>) {
+  static create<T extends Model<P>, P>(
+    this: new (props: P) => T,
+    props: Exact<P>
+  ) {
     const model = new this(props);
     model.patch(props);
     model.onInit();
@@ -55,16 +60,13 @@ export class Model<Props> {
     return this.store!.all();
   }
 
-  static put<T extends Model<P>, P>(
-    this: StoreWise<T,P>,
-    props: Exact<P>
-  ) {
+  static put<T extends Model<P>, P>(this: StoreWise<T, P>, props: Exact<P>) {
     injectStore(this);
     return this.store!.put(props);
   }
 
   static patch<T extends Model<P>, P>(
-    this: StoreWise<T,P>,
+    this: StoreWise<T, P>,
     id: number,
     props: Partial<P>
   ) {
@@ -72,21 +74,17 @@ export class Model<Props> {
   }
 
   static remove<T extends Model<P>, P extends {}>(
-    this: StoreWise<T,P>,
+    this: StoreWise<T, P>,
     id: number
   ) {
     return this.store?.remove(id);
   }
 
-  static flush<T extends Model<P>, P extends {}>(
-    this: StoreWise<T,P>
-  ) {
+  static flush<T extends Model<P>, P extends {}>(this: StoreWise<T, P>) {
     return this.store?.flush();
   }
 
-  static injectStore<T extends Model<P>, P>(
-    this: StoreWise<T,P>
-   ) {
+  static injectStore<T extends Model<P>, P>(this: StoreWise<T, P>) {
     if (!this.store) {
       this.store = new Store(this);
     }
@@ -109,10 +107,10 @@ export class Model<Props> {
     const keys = Object.keys(props).reduce(
       (acc, key) => {
         // @ts-ignore
-        acc[this.hasOwnProperty(key) ? 'oldKeys' : 'newKeys'][key] = props[key];
+        acc[this.hasOwnProperty(key) ? "oldKeys" : "newKeys"][key] = props[key];
         return acc;
       },
-      { oldKeys: {}, newKeys: {} } as { oldKeys: Props, newKeys: Props }
+      { oldKeys: {}, newKeys: {} } as any
     );
 
     if (!isEmpty(keys.oldKeys)) {
@@ -132,7 +130,7 @@ export class Model<Props> {
 
     return {
       ...attrs,
-      ...(isEmpty(relations) ? {} : this._applyReferences(relations as Props))
+      ...(isEmpty(relations) ? {} : this._applyReferences(relations as Props)),
     };
   }
 
@@ -149,7 +147,7 @@ export class Model<Props> {
           const model = isArray ? definition[0] : definition;
 
           // @ts-ignore
-          const build = item =>
+          const build = (item) =>
             isObservableObject(item)
               ? item
               : model.store
@@ -159,7 +157,13 @@ export class Model<Props> {
           // @ts-ignore
           const data = json[key];
 
-          const result = data ? (isArray ? data.map(build) : build(data)) : isArray ? [] : null;
+          const result = data
+            ? isArray
+              ? data.map(build)
+              : build(data)
+            : isArray
+            ? []
+            : null;
           // @ts-ignore
           acc[key] = result;
 
@@ -168,4 +172,3 @@ export class Model<Props> {
     );
   }
 }
-

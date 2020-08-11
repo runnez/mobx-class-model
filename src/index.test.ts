@@ -1,10 +1,10 @@
-import { Model, prop, ref } from './index';
+import { Model, prop, ref } from "./index";
 
-describe('Model static methods', () => {
+describe("Model static methods", () => {
   const factoryClient = (id = 1) => ({
     id,
-    name: 'client',
-    user: { id: 1, name: 'user' }
+    name: "client",
+    user: { id: 1, name: "user" },
   });
 
   type IUser = {
@@ -33,7 +33,7 @@ describe('Model static methods', () => {
     User.flush();
   });
 
-  test('create', () => {
+  test("create", () => {
     const props = factoryClient();
     const client = Client.create(props);
     expect(client).toMatchObject(props);
@@ -41,7 +41,7 @@ describe('Model static methods', () => {
     expect(Client.create(props) === client).toEqual(false);
   });
 
-  test('put', () => {
+  test("put", () => {
     const props = factoryClient();
     const client = Client.put(props);
     expect(client).toMatchObject(props);
@@ -49,32 +49,32 @@ describe('Model static methods', () => {
     expect(Client.put(props) === client).toEqual(true);
   });
 
-  test('get', () => {
+  test("get", () => {
     Client.put(factoryClient());
     const client = Client.get(1)!;
     expect(client).toBeTruthy();
-    expect(client.name).toEqual('client');
+    expect(client.name).toEqual("client");
   });
 
-  test('patch', () => {
+  test("patch", () => {
     const client = Client.put(factoryClient());
-    Client.patch(1, { name: 'new name' });
-    expect(client.name).toEqual('new name');
+    Client.patch(1, { name: "new name" });
+    expect(client.name).toEqual("new name");
   });
 
-  test('remove', () => {
+  test("remove", () => {
     const client = Client.put(factoryClient());
     Client.remove(1);
     expect(Client.get(1)).toEqual(undefined);
   });
 
-  test('all', () => {
+  test("all", () => {
     const client = Client.put(factoryClient());
     const client2 = Client.put(factoryClient(2));
     expect(Client.all()).toEqual([client, client2]);
   });
 
-  test('flush', () => {
+  test("flush", () => {
     Client.put(factoryClient());
     Client.flush();
     expect(Client.get(1)).toEqual(undefined);

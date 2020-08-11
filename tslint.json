@@ -1,21 +1,7 @@
 {
-  "extends": "tslint:recommended",
+  "extends": ["tslint:latest", "tslint-config-prettier"],
   "rules": {
-    "quotemark": [true, "single", "jsx-double"],
-    "semicolon": [true, "always", "ignore-bound-class-methods"],
-    "arrow-parens": [true, "ban-single-arg-parens"],
-    "ordered-imports": false,
-    "max-line-length": false,
-    "array-type": false,
-    "trailing-comma": false,
-    "no-console": false,
-    "interface-name": false,
-    "member-access": false,
     "max-classes-per-file": false,
-    "no-var-requires": false,
-    "prefer-for-of": false,
-    "no-empty-interface": false,
-    "object-literal-sort-keys": false,
-    "only-arrow-functions": false
+    "no-empty-interface": false
   }
 }
