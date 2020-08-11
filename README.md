@@ -1,4 +1,4 @@
-# Mobx ActiveModel
+# Mobx Class Model
 
 Model layer for Mobx application, heavily inspired by the server-side model class approach.
 
@@ -12,10 +12,12 @@ Using this you can replace your domain stores and share code between stores and 
 * 📦 Lightweight (2kb min)
 
 ## Getting started
-> ActiveModel helps to convert JSON structures into complex object graphs and ensures existence single object reference. Underhood each model class has a reference store to deal with that.
+> Mobx Class Model helps to convert JSON structures into complex object graphs and ensures existence single object reference. Underhood each model class has a reference store to deal with that.
 
 ### Define model
 ```typescript
+import { Model, prop, ref } from 'mobx-class-model'
+
 // 1. Define the expected Props interface. Usually, it's a server-side JSON structure.
 interface ApiUser {
   id: number
@@ -129,7 +131,7 @@ const TodoModal = ({ id }: { id: number }) => {
 }
 ```
 
-## How to use with RootStore?
+### How to use with RootStore?
 ```typescript
 class RootStore {
   constructor() {

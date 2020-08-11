@@ -1,5 +1,5 @@
 {
-  "name": "mobx-activemodel",
+  "name": "mobx-class-model",
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
