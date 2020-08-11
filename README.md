@@ -48,14 +48,14 @@ interface ApiTodo {
   id: number;
   title: string;
   completed: boolean;
-  user: ApiUser;
+  creator: ApiUser;
   performers: ApiUser[];
 }
 
 // 5. Mark prop as releation and pass your model class
 class Todo extends Model<ApiTodo> {
-  @ref(User) user: User;
-  @ref.array(User) performers: User;
+  @ref(User) creator: User;
+  @ref.array(User) performers: User[];
 
   @prop id: number;
   @prop string: number;
@@ -71,8 +71,8 @@ Every instance method has **patch** method.
 ```typescript
 todo.patch({ title: "changed" });
 todo.title; // changed
-todo.user.patch({ lastName: "Snow" });
-todo.user.fullName; // John Snow
+todo.creator.patch({ lastName: "Snow" });
+todo.creator.fullName; // John Snow
 ```
 
 **`model.onInit`**
@@ -89,7 +89,7 @@ Produces a new Model instance or updates existing reference and returns it.
 
 ```typescript
 const todo = Todo.put(todoJson);
-todo.user.fullName; // John Doe
+todo.creator.fullName; // John Doe
 ```
 
 `Model.get`
@@ -97,6 +97,7 @@ Returns existing instance by id. It's observable.
 
 ```typescript
 Todo.get(1); // Todo
+todo === Todo.get(1); // true
 ```
 
 `Model.all`
@@ -144,7 +145,7 @@ const context = new RootStore();
 class Todo extends Model<ApiTodo> {
   rootStore: RootStore
 
-  @ref(User) user: User
+  @ref(User) creator: User
   @ref.array(User) performers: User
 
   @prop id: number
@@ -155,8 +156,8 @@ class Todo extends Model<ApiTodo> {
     fetchTodo(id).then(json => this.put(json))
   }
 
-  canEdit() {
-    return this.rootStore.currentUser === this.user
+  canManage() {
+    return this.rootStore.currentUser === this.creator
   }
 
   save(props: Partial<ApiTodo>) {
