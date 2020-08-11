@@ -106,19 +106,19 @@ export class Model<Props> {
     }
   }
 
-  private _prepareProps(props: Props) {
+  private _prepareProps(props: any) {
     // @ts-ignore
     const relationsKeys = Object.keys(this.constructor.relations || {});
-    const attrs = omit(props as {}, relationsKeys as []);
-    const relations = pick(props as {}, relationsKeys as []);
+    const attrs = omit(props, relationsKeys);
+    const relations = pick(props, relationsKeys);
 
     return {
       ...attrs,
-      ...(isEmpty(relations) ? {} : this._applyReferences(relations as Props)),
+      ...(isEmpty(relations) ? {} : this._applyReferences(relations)),
     };
   }
 
-  private _applyReferences(json: { [key: string]: any }) {
+  private _applyReferences(json: any) {
     return (
       // @ts-ignore
       Object.entries(this.constructor.relations || {})
