@@ -1,15 +1,17 @@
 // rollup.config.js
-import typescript from 'rollup-plugin-typescript2';
+import typescript from "rollup-plugin-typescript2";
+import { uglify } from "rollup-plugin-uglify";
 
 export default {
-  input: 'src/index.ts',
+  input: "src/index.ts",
   output: {
-    file: 'lib/index.js',
-    format: 'cjs'
+    file: "lib/index.js",
+    format: "cjs",
   },
-	plugins: [
-		typescript({
-      tsconfig: './tsconfig.json'
-    })
-	]
-}
+  plugins: [
+    typescript({
+      tsconfig: "./tsconfig.json",
+    }),
+    uglify(),
+  ],
+};
