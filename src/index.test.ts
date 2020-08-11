@@ -1,4 +1,5 @@
-import { Model, prop, ref } from "./index";
+import { autorun } from "mobx";
+import { Model, prop } from "./index";
 
 describe("Model static methods", () => {
   const factoryClient = (id = 1) => ({
@@ -50,9 +51,19 @@ describe("Model static methods", () => {
   });
 
   test("get", () => {
+    const subscriber = jest.fn();
+
+    const disposer = autorun(() => {
+      Client.get(1);
+      subscriber();
+    });
+
     Client.put(factoryClient());
+
     const client = Client.get(1)!;
     expect(client).toBeTruthy();
+    expect(subscriber.mock.calls.length).toBe(2);
+    disposer();
     expect(client.name).toEqual("client");
   });
 
