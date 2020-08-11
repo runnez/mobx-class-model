@@ -1,19 +1,16 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "outDir": "./lib/",
+    "declaration": true,
+    "module": "ESNext",
     "target": "es5",
-    "jsx": "react",
-    "noEmit": true,
     "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "allowJs": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "esModuleInterop": true
   },
-  "include": ["./src/**/*", "example.ts"]
+  "include": ["./src/index.ts"]
 }
