@@ -9,7 +9,7 @@ Using this you can replace your domain stores and share code between stores and 
 - ⚙️ Class based
 - 😎 Reducing boilerplate
 - 🏎 Typed (TS)
-- 📦 Lightweight (1.5kb min)
+- 📦 Lightweight (1.5kb)
 
 ## Getting started
 
