@@ -20,22 +20,6 @@ function injectStore<T extends Model<P>, P>(Class: StoreWise<T, P>) {
 export class Model<Props> {
   static idKey = "id";
 
-  static produce<T extends Model<P>, P>(
-    this: StoreWise<T, P>,
-    props: Exact<P>,
-    options?: { cache: boolean }
-  ) {
-    if (!options || options.cache) {
-      injectStore(this);
-      return this.store!.put(props);
-    }
-
-    const model = new this(props);
-    model.patch(props);
-    model.onInit();
-    return model;
-  }
-
   // @TODO decide should it be public available
   static create<T extends Model<P>, P>(
     this: new (props: P) => T,
