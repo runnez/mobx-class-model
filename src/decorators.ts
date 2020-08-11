@@ -3,6 +3,14 @@ export const prop = (target: any, key: string) => {
   target.constructor.props[key] = 1;
 };
 
+export const identifier = (target: any, key: string) => {
+  if (target.constructor.hasOwnProperty('idKey')) {
+    throw new Error('should be only one identifier');
+  }
+
+  target.constructor.idKey = key;
+};
+
 // @TODO add generic type
 // it doesn't work function ref<T extends typeof Model>(Class: T)
 export function ref(Class: any) {

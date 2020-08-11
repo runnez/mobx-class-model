@@ -1,5 +1,5 @@
 import { Model } from './model';
-import { prop, ref } from './decorators';
+import { identifier, prop, ref } from './decorators';
 
 describe('prop decorator', () => {
   it('should add keys to static prop', () => {
@@ -35,5 +35,17 @@ describe('ref decorator', () => {
     expect(User.relations.bestFriend).toEqual(User);
     // @ts-ignore
     expect(User.relations.friends).toEqual([User]);
+  });
+});
+
+describe('identifier', () => {
+  it('should set idKey', () => {
+    class FooWithIdentifier extends Model<{ bar: string }> {
+      @identifier bar: string;
+    }
+
+    FooWithIdentifier.put({ bar: 'test' });
+
+    expect(FooWithIdentifier.get('test')).toBeTruthy();
   });
 });

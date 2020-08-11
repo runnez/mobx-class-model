@@ -4,7 +4,6 @@ import { Store } from './store';
 
 type StoreWise<T extends Model<P>, P> = {
   store?: Store<T, P>,
-  injectStore: () => void,
   new (props: P): T
 };
 
@@ -21,7 +20,6 @@ function injectStore<T extends Model<P>, P>(
 }
 
 export class Model<Props> {
-  static id: any;
   static idKey = 'id';
 
   static produce<T extends Model<P>, P>(this: StoreWise<T, P>, props: Exact<P>, options?: { cache: boolean }) {
@@ -46,7 +44,7 @@ export class Model<Props> {
 
   static get<T extends Model<P>, P>(
     this: StoreWise<T, P>,
-    id: number
+    id: number | string
   ) {
     injectStore(this);
     return this.store!.get(id);

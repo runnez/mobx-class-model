@@ -2,7 +2,7 @@ import { action, observable, values } from 'mobx';
 import { Model } from './model';
 
 export class Store<T extends Model<P>, P> {
-  @observable map = observable.map<number, T>();
+  @observable map = observable.map<number | string, T>();
 
   Model: new(props: P) => T;
 
@@ -10,7 +10,7 @@ export class Store<T extends Model<P>, P> {
     this.Model = constructor;
   }
 
-  get(id: number) {
+  get(id: number | string) {
     return this.map.get(id);
   }
 
@@ -25,7 +25,7 @@ export class Store<T extends Model<P>, P> {
   @action
   put = (props: P) => {
     // @ts-ignore
-    const id = props[this.Model.idKey] as typeof Model['id'];
+    const id = props[this.Model.idKey];
 
     if (this.map.has(id)) {
       return this.patch(id, props)!;
@@ -37,7 +37,7 @@ export class Store<T extends Model<P>, P> {
   };
 
   @action
-  patch = (id: typeof Model['id'], props: Partial<P>) => {
+  patch = (id: number | string, props: Partial<P>) => {
     const item = this.get(id);
     if (!item) return;
     item.patch(props);
@@ -45,7 +45,7 @@ export class Store<T extends Model<P>, P> {
   };
 
   @action
-  remove = (id: number) => {
+  remove = (id: number | string) => {
     return this.map.delete(id);
   };
 }

@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "yarn jest",
-    "build": "yarn size-limit && yarn rollup -c"
+    "build": "yarn rollup -c && yarn size-limit"
   },
   "author": "Andrey Boldyrev",
   "license": "ISC",
